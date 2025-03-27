@@ -1,25 +1,52 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Generic, TypeVar, Optional, Literal, List
 
 T = TypeVar("T")
 
 
-class ResponseData(BaseModel, Generic[T]):
-    code: int = 200
-    data: Optional[T] = None
-    message: str = "ok"
-    type: Literal["success", "error"] = "success"
+class PageData(BaseModel, Generic[T]):
+    page: int = Field(..., description="当前页码")
+    size: int = Field(..., description="每页条数")
+    total: int = Field(..., description="总条数")
+    content: list[T] = Field(default_factory=list[T], description="数据列表")
 
 
-class ResponsePageData(BaseModel, Generic[T]):
-    page: int
-    pageSize: int
-    total: int
-    content: list[T] = []
+class BaseResponse(BaseModel, Generic[T]):
+    """通用响应基类"""
 
-
-class ResponsePage(BaseModel, Generic[T]):
     code: int
-    data: ResponsePageData[T]
-    message: str = "ok"
-    type: Literal["success", "error"] = "success"
+    data: Optional[T] | PageData[T] = Field(default=None, description="响应数据")
+    message: str
+    type: Literal["success", "error"]
+
+
+class ResponseSuccess(BaseResponse[T], Generic[T]):
+    """成功响应"""
+
+    code: int = Field(default=200, description="状态码", frozen=True)
+    message: str = Field(default="ok", description="响应消息", frozen=True)
+    type: Literal["success", "error"] = Field(
+        default="success", description="响应类型", frozen=True
+    )
+
+
+class ResponseError(BaseResponse[T], Generic[T]):
+    """错误响应"""
+
+    code: int = Field(default=500, description="错误状态码", frozen=True)
+    message: str = Field(default="error", description="错误消息", frozen=True)
+    type: Literal["success", "error"] = Field(
+        default="error", description="响应类型", frozen=True
+    )
+
+
+class ResponseSuccessPage(ResponseSuccess[PageData[T]], Generic[T]):
+    """成功响应"""
+
+    pass
+
+
+class ResponseErrorPage(ResponseError[PageData[T]], Generic[T]):
+    """错误响应"""
+
+    pass
