@@ -1,5 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 from faker import Faker
+from typing import Annotated
 from app.model.common import ResponseData
 from app.model.login import AccountUserTokenParams
 
@@ -21,7 +22,14 @@ def get_access_token(form_data: AccountUserTokenParams):
 
 
 @router.post("/user/info")
-def get_user_info(token: str):
+def get_user_info(Authorization: Annotated[str | None, Header()] = None):
+    if not Authorization:
+        return ResponseData(
+            code=401,
+            data=None,
+            message="Unauthorized",
+            type="error",
+        )
     return ResponseData(
         code=200,
         data={
@@ -32,7 +40,7 @@ def get_user_info(token: str):
             "roles": ["admin"],
             "roleName": "admin",
             "menus": [],
-            "token": token,
+            "token": fake.uuid4(),
             "organizeId": fake.random_int(min=100000, max=999999),
             "organizeName": fake.company(),
         },
