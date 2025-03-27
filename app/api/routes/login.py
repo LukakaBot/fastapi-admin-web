@@ -21,7 +21,7 @@ def get_access_token(form_data: AccountUserTokenParams):
     )
 
 
-@router.post("/user/info")
+@router.get("/user/info")
 def get_user_info(Authorization: Annotated[str | None, Header()] = None):
     if not Authorization:
         return ResponseData(
