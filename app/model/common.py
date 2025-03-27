@@ -4,21 +4,21 @@ from typing import Generic, TypeVar, Optional, Literal, List
 T = TypeVar("T")
 
 
-class ResponseData(Generic[T], BaseModel):
+class ResponseData(BaseModel, Generic[T]):
     code: int = 200
     data: Optional[T] = None
     message: str = "ok"
     type: Literal["success", "error"] = "success"
 
 
-class ResponsePageData(Generic[T], BaseModel):
+class ResponsePageData(BaseModel, Generic[T]):
     page: int
     pageSize: int
     total: int
     content: list[T] = []
 
 
-class ResponsePage(Generic[T], BaseModel):
+class ResponsePage(BaseModel, Generic[T]):
     code: int
     data: ResponsePageData[T]
     message: str = "ok"
