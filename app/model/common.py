@@ -5,6 +5,8 @@ T = TypeVar("T")
 
 
 class PageData(BaseModel, Generic[T]):
+    """分页信息"""
+
     page: int = Field(..., description="当前页码")
     size: int = Field(..., description="每页条数")
     total: int = Field(..., description="总条数")
@@ -38,15 +40,3 @@ class ResponseError(BaseResponse[T], Generic[T]):
     type: Literal["success", "error"] = Field(
         default="error", description="响应类型", frozen=True
     )
-
-
-class ResponseSuccessPage(ResponseSuccess[PageData[T]], Generic[T]):
-    """成功响应"""
-
-    pass
-
-
-class ResponseErrorPage(ResponseError[PageData[T]], Generic[T]):
-    """错误响应"""
-
-    pass

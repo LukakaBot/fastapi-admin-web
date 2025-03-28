@@ -1,11 +1,7 @@
 from fastapi import APIRouter, Header
 from typing import Annotated
 from faker import Faker
-from app.model.common import (
-    BaseResponse,
-    PageData,
-    ResponseSuccess,
-)
+from app.model.common import PageData, ResponseSuccess, ResponseError
 
 router = APIRouter(prefix="/user", tags=["user"])
 
@@ -16,11 +12,8 @@ fake = Faker()
 @router.get("/info")
 def get_user_info(Authorization: Annotated[str | None, Header()] = None):
     if not Authorization:
-        return BaseResponse(
-            code=401,
-            data=None,
+        return ResponseError(
             message="Unauthorized",
-            type="error",
         )
 
     return ResponseSuccess(
@@ -41,18 +34,17 @@ def get_user_info(Authorization: Annotated[str | None, Header()] = None):
 
 # 获取用户分页列表
 @router.get("/page")
-def get_user_page(Authorization: Annotated[str | None, Header()], page: int, size: int):
+def get_user_page(
+    page: int, size: int, Authorization: Annotated[str | None, Header()] = None
+):
     if not Authorization:
-        return BaseResponse(
-            code=401,
-            data=None,
+        return ResponseError(
             message="Unauthorized",
-            type="error",
         )
 
     users = []
 
-    for _ in range(50):
+    for _ in range(size):
         users.append(
             {
                 "userId": fake.random_int(min=100000, max=999999),
@@ -63,14 +55,11 @@ def get_user_page(Authorization: Annotated[str | None, Header()], page: int, siz
             }
         )
 
-    return BaseResponse(
-        code=200,
+    return ResponseSuccess(
         data=PageData(
             page=page,
             size=size,
-            total=len(users),
+            total=50,
             content=users,
         ),
-        message="success",
-        type="success",
     )
