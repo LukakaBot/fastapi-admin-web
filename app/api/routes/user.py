@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Header
 from typing import Annotated
 from faker import Faker
-from app.model.common import PageData, ResponseSuccess, ResponseError
+from app.model.common import PageData, ResponseSuccess, ResponseError, ResponseCode
+from app.service import UserService
+from app.model.users import UserCreate, Users
+from app.api.deps import SessionDep
 
 router = APIRouter(prefix="/user", tags=["user"])
 
@@ -13,6 +16,7 @@ fake = Faker()
 def get_user_info(Authorization: Annotated[str | None, Header()] = None):
     if not Authorization:
         return ResponseError(
+            code=ResponseCode.UNAUTHORIZED,
             message="Unauthorized",
         )
 
@@ -39,6 +43,7 @@ def get_user_page(
 ):
     if not Authorization:
         return ResponseError(
+            code=ResponseCode.UNAUTHORIZED,
             message="Unauthorized",
         )
 
@@ -62,4 +67,13 @@ def get_user_page(
             total=50,
             content=users,
         ),
+    )
+
+
+@router.post("/create")
+def create_user(session: SessionDep, params: UserCreate) -> ResponseSuccess[Users]:
+    db_user: Users = UserService.create_user(session=session, user=params)
+
+    return ResponseSuccess(
+        data=db_user,
     )

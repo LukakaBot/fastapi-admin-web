@@ -1,7 +1,17 @@
 from pydantic import BaseModel, Field
-from typing import Generic, TypeVar, Optional, Literal, List
+from typing import Generic, TypeVar, Optional, Literal
+from enum import IntEnum
 
 T = TypeVar("T")
+
+
+class ResponseCode(IntEnum):
+    """响应码"""
+
+    SUCCESS = 200
+    ERROR = 500
+    NOT_FOUND = 404
+    UNAUTHORIZED = 401
 
 
 class PageData(BaseModel, Generic[T]):
@@ -25,7 +35,7 @@ class BaseResponse(BaseModel, Generic[T]):
 class ResponseSuccess(BaseResponse[T], Generic[T]):
     """成功响应"""
 
-    code: int = Field(default=200, description="状态码", frozen=True)
+    code: int = Field(default=ResponseCode.SUCCESS, description="状态码", frozen=True)
     message: str = Field(default="ok", description="响应消息", frozen=True)
     type: Literal["success", "error"] = Field(
         default="success", description="响应类型", frozen=True
@@ -35,7 +45,7 @@ class ResponseSuccess(BaseResponse[T], Generic[T]):
 class ResponseError(BaseResponse[T], Generic[T]):
     """错误响应"""
 
-    code: int = Field(default=500, description="错误状态码", frozen=True)
+    code: int = Field(default=ResponseCode.ERROR, description="错误状态码", frozen=True)
     message: str = Field(default="error", description="错误消息", frozen=True)
     type: Literal["success", "error"] = Field(
         default="error", description="响应类型", frozen=True
