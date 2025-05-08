@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Header
 from typing import Annotated
 from faker import Faker
+import uuid
+from sqlmodel import delete, col
 from app.model.common import PageData, ResponseSuccess, ResponseError, ResponseCode
 from app.service import UserService
 from app.model.users import UserCreate, Users
@@ -77,3 +79,31 @@ def create_user(session: SessionDep, params: UserCreate) -> ResponseSuccess[User
     return ResponseSuccess(
         data=db_user,
     )
+
+
+@router.delete("/delete")
+def delete_user(
+    session: SessionDep,
+    user_id: int,
+    Authorization: Annotated[str | None, Header()] = None,
+):
+    if not Authorization:
+        return ResponseError(
+            code=ResponseCode.UNAUTHORIZED,
+            message="Unauthorized",
+        )
+
+    user = session.get(Users, user_id)
+    if not user:
+        return ResponseError(
+            code=ResponseCode.ERROR,
+            message="用户不存在",
+        )
+
+    statement = delete(Users).where(col(Users.user_id) == user_id)
+
+    session.exec(statement)  # type: ignore
+    session.delete(user)
+    session.commit()
+
+    return ResponseSuccess(message="删除成功")
